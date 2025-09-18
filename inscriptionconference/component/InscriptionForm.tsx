@@ -46,7 +46,9 @@ export default function InscriptionForm() {
         <button style={{ background: '#fff', color: '#172042', border: 'none', borderRadius: 20, padding: '6px 18px', fontWeight: 600 }}>18h</button>
       </div>
       <h2 style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: 24, marginTop: 32, textTransform: 'uppercase', letterSpacing: 1 }}>Conférence en ligne</h2>
+
       <p style={{ fontSize: 15, marginBottom: 18, color: '#e0e0e0' }}>
+      (Vous avez le choix d’entrer votre adresse e-mail, votre numéro de téléphone, ou les deux. Cela nous permettra de vous rappeler l’événement.)
       </p>
       <div style={{ fontWeight: 600, marginBottom: 18 }}>LIVE ZOOM</div>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
