@@ -126,7 +126,7 @@ export default function InscriptionForm() {
         <input
           type="tel"
           name="phone"
-          placeholder="Téléphone (optionnel)"
+          placeholder="Téléphone"
           value={form.phone}
           onChange={handleChange}
           style={{
