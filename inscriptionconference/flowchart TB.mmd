@@ -1,0 +1,143 @@
+flowchart TB
+  %% --- Style Definitions ---
+  classDef frontend fill:#e1f5fe,color:black,stroke:#01579B
+  classDef backend fill:#f3e5f5,color:black,stroke:#4A148C
+  classDef database fill:#e8f5e8,color:black,stroke:#1B5E20
+  classDef external fill:#fff3e0,color:black,stroke:#E65100
+  classDef client fill:#fce4ec,color:black,stroke:#880E4F
+  classDef pages fill:#fff9c4,color:black,stroke:#F57F17
+
+  %% --- Client Layer ---
+  subgraph CLIENT ["Client (Navigateur Mobile / Desktop)"]
+    BROWSER[Navigateur Web]
+    LOCAL_STORAGE[Local Storage<br/>JWT, Données utilisateur]
+  end
+
+  %% --- Frontend (App + Components + Pages) ---
+  subgraph FRONTEND ["Frontend - Next.js 15"]
+    UI[Interface Utilisateur]
+    COMP[Composants React (LoginForm, InventoryCard, Scanner...)]
+    ROUTER[Next.js Router]
+    STYLES[Styles - CSS Modules, Mantine UI]
+  end
+
+  %% --- Application Pages (explicit) ---
+  subgraph PAGES_SZE ["Pages (Routes) - Interactions"]
+    LOGIN_PAGE[Login / Signup<br/>/login]
+    HOME_PAGE[Accueil<br/>/]
+    INVENTORY_PAGE[Inventaire<br/>/inventaire]
+    BOOK_PAGE[Livre (détail)<br/>/livre/:id]
+    ORDERS_PAGE[Commandes<br/>/commandes]
+    RESERVATIONS_PAGE[Réservations<br/>/reservations]
+    SCANNER_PAGE[Scanner<br/>/scanner]
+    ACCOUNT_PAGE[Profil<br/>/account]
+  end
+
+  %% --- Backend APIs ---
+  subgraph BACKEND ["Backend - Next.js API Routes"]
+    AUTH[API Auth<br/>/api/login, /api/signup]
+    BOOKS[API Livres<br/>/api/livre]
+    INVENTORY[API Inventaire<br/>/api/inventaire]
+    ORDERS[API Commandes<br/>/api/commande]
+    RESERVATIONS[API Réservations<br/>/api/reservations]
+    SCANNER[API Scanner<br/>/api/ScannerReception]
+    ACCOUNT[API Compte<br/>/api/account]
+  end
+
+  %% --- Database Tables ---
+  subgraph DATABASE ["Base de Données - Supabase (PostgreSQL)"]
+    USER_TABLE[USER<br/>id, name, password<br/>photo, admin]
+    LIVRE_TABLE[livre<br/>id, title, author<br/>description, price, isbn]
+    INVENTAIRE_TABLE[inventaire<br/>id, quantite, price<br/>quantite_reservee]
+    COMMANDE_TABLE[commande<br/>id, quantite, vendeur<br/>created_at]
+    RESERVATION_TABLE[reservations<br/>id, quantite_bloquee<br/>date_expiration]
+    RECEPTION_TABLE[reception<br/>id, quantite<br/>date_reception]
+    ISBN_TABLE[isbn<br/>id, isbn, livre_id]
+  end
+
+  %% --- External Services ---
+  subgraph EXTERNAL ["Services Externes"]
+    SUPABASE[Supabase<br/>DB, Auth, Stockage fichiers]
+    JWT[JWT Tokens]
+    BCRYPT[BCrypt]
+    QR_SCANNER[QR / Code-barres Scanner]
+  end
+
+  %% --- Client -> Frontend ---
+  BROWSER --> UI
+  BROWSER --> LOCAL_STORAGE
+  LOCAL_STORAGE -->|stocke token| AUTH
+
+  %% --- Frontend internals ---
+  UI --> COMP
+  COMP --> ROUTER
+  ROUTER --> LOGIN_PAGE
+  ROUTER --> HOME_PAGE
+  ROUTER --> INVENTORY_PAGE
+  ROUTER --> BOOK_PAGE
+  ROUTER --> ORDERS_PAGE
+  ROUTER --> RESERVATIONS_PAGE
+  ROUTER --> SCANNER_PAGE
+  ROUTER --> ACCOUNT_PAGE
+
+  %% --- Page Interaction Flows (explicit user journeys) ---
+  LOGIN_PAGE -->|login réussi| HOME_PAGE
+  HOME_PAGE -->|aller vers| INVENTORY_PAGE
+  HOME_PAGE -->|aller vers| ORDERS_PAGE
+  HOME_PAGE -->|aller vers| RESERVATIONS_PAGE
+  HOME_PAGE -->|aller vers| SCANNER_PAGE
+  HOME_PAGE -->|aller vers| ACCOUNT_PAGE
+
+  INVENTORY_PAGE -->|voir détail| BOOK_PAGE
+  BOOK_PAGE -->|ajouter au panier / commander| ORDERS_PAGE
+  INVENTORY_PAGE -->|réserver| RESERVATIONS_PAGE
+
+  SCANNER_PAGE -->|scan ISBN| BOOK_PAGE
+  SCANNER_PAGE -->|réception| INVENTORY_PAGE
+
+  ORDERS_PAGE -->|confirmer paiement| INVENTORY_PAGE
+  RESERVATIONS_PAGE -->|libérer stock / confirmer| INVENTORY_PAGE
+
+  %% --- Pages -> APIs ---
+  LOGIN_PAGE --> AUTH
+  INVENTORY_PAGE --> INVENTORY
+  BOOK_PAGE --> BOOKS
+  ORDERS_PAGE --> ORDERS
+  RESERVATIONS_PAGE --> RESERVATIONS
+  SCANNER_PAGE --> SCANNER
+  ACCOUNT_PAGE --> ACCOUNT
+
+  %% --- APIs -> Database & Services ---
+  AUTH --> USER_TABLE
+  AUTH --> JWT
+  AUTH --> BCRYPT
+  BOOKS --> LIVRE_TABLE
+  BOOKS --> ISBN_TABLE
+  INVENTORY --> INVENTAIRE_TABLE
+  INVENTORY --> LIVRE_TABLE
+  ORDERS --> COMMANDE_TABLE
+  ORDERS --> LIVRE_TABLE
+  RESERVATIONS --> RESERVATION_TABLE
+  RESERVATIONS --> INVENTAIRE_TABLE
+  SCANNER --> RECEPTION_TABLE
+  SCANNER --> LIVRE_TABLE
+  ACCOUNT --> USER_TABLE
+
+  %% --- APIs -> External Platform (Supabase) ---
+  AUTH --> SUPABASE
+  BOOKS --> SUPABASE
+  INVENTORY --> SUPABASE
+  ORDERS --> SUPABASE
+  RESERVATIONS --> SUPABASE
+  SCANNER --> SUPABASE
+  ACCOUNT --> SUPABASE
+  SCANNER --> QR_SCANNER
+  QR_SCANNER --> BOOKS
+
+  %% --- Apply Classes ---
+  class UI,COMP,ROUTER,STYLES frontend
+  class LOGIN_PAGE,HOME_PAGE,INVENTORY_PAGE,BOOK_PAGE,ORDERS_PAGE,RESERVATIONS_PAGE,SCANNER_PAGE,ACCOUNT_PAGE pages
+  class AUTH,BOOKS,INVENTORY,ORDERS,RESERVATIONS,SCANNER,ACCOUNT backend
+  class USER_TABLE,LIVRE_TABLE,INVENTAIRE_TABLE,COMMANDE_TABLE,RESERVATION_TABLE,RECEPTION_TABLE,ISBN_TABLE database
+  class SUPABASE,JWT,BCRYPT,QR_SCANNER external
+  class BROWSER,LOCAL_STORAGE client
